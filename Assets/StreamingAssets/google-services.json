@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "963824400597",
+    "project_id": "craneproject-6ecab",
+    "storage_bucket": "craneproject-6ecab.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:963824400597:android:200075ba37b898675b4a5c",
+        "android_client_info": {
+          "package_name": "com.CraneCompany.CraneProject"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDrWckc9aIipUXyIfy_9nqa6KQ7AvizOkQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
