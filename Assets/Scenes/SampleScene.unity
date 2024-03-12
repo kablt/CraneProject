@@ -6443,6 +6443,7 @@ MonoBehaviour:
   PointB: {fileID: 975310057}
   LiftRollBack: {fileID: 176129367}
   moveSpeed: 5
+  downSpeed: 1
   CraneBody: {fileID: 805792191}
   CraneHoist: {fileID: 1894930254}
   CraneLift: {fileID: 1156337660}
