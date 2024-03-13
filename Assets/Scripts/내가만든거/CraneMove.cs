@@ -41,7 +41,7 @@ public class CraneMove : MonoBehaviour
                 CraneDetectedCoil();
                 break;
             case CraneStatus.CoilMove:
-                MovePoint();
+                MovementPointB();
                 break;
             default:
                 Debug.Log("오류가 발생했습니다");
@@ -75,18 +75,27 @@ public class CraneMove : MonoBehaviour
         Debug.Log("두번쨰 case 함수로 잘넘어왔다.");
         StartCoroutine(DetectCoil());
         //리프트의 특정 지점과 코일이 충돌시 코일의 위치를 리프트의 특정위치로 업데이트하는 함수만들기.
-        cranstatus = CraneStatus.CoilMove;
     }
 
     IEnumerator DetectCoil()
     {
         yield return new WaitForSeconds(1f);
+        downSpeed = 3f;
         Debug.Log("두번쨰 case 함수에서 코루틴을 발동 시켰다..");
         StopCoroutine(MovementRoutine());
-        Vector3 dir = new Vector3(0, -20f, 0); //방향(하강)
+        Vector3 dir = new Vector3(0, -5f, 0); //방향(하강)
         dir = dir.normalized;
         CraneLift.transform.position += dir * downSpeed * Time.deltaTime;
-        yield return new WaitForSeconds(1f);
+        //if 코일과 충돌시 코일이 리프트의 위치에 업데이트되는 구문 실행.
+        Debug.Log("코일 위치가 이제 리프트의 지정지점으로 업데이트됨");
+        yield return new WaitForSeconds(6f);
+        Debug.Log("리프트 다운을 멈추고 다시 올라가야됨");
+        downSpeed = 0;
+        Vector3 targetPositionY = new Vector3(CraneLift.transform.position.x, LiftRollBack.position.y, CraneLift.transform.position.z);
+        CraneLift.transform.position = Vector3.Lerp(CraneLift.transform.position, targetPositionY, moveSpeed * Time.deltaTime);
+        //충돌시 하강을 멈추고 다시 올라감
+        yield return new WaitForSeconds(2f);
+        cranstatus = CraneStatus.CoilMove;
     }
 
     //대기상태일떄 막대기에서 ray쏴서 코일이 있는지 상시 체크. 있으면 PointA로 이동
@@ -108,25 +117,31 @@ public class CraneMove : MonoBehaviour
         }
     }
 
-    //코일 충돌후 위치가 리프트로 업데이트 디고 있을떄 목표지점으로 이동하는 함수
-    void MovePoint()
+    void MovementPointB()
     {
-        if (!Mathf.Approximately(CraneLift.transform.position.y, LiftRollBack.position.y))
-            {
-                Vector3 targetPositionY = new Vector3(CraneLift.transform.position.x, LiftRollBack.position.y, CraneLift.transform.position.z);
-                CraneLift.transform.position = Vector3.Lerp(CraneLift.transform.position, targetPositionY, moveSpeed * Time.deltaTime);          
-            }
-        if (Mathf.Abs(CraneLift.transform.position.y - PointB.position.y) < 0.1f)
-        {
-            Vector3 targetpositionZ = new Vector3(CraneHoist.transform.position.x, CraneHoist.transform.position.y, PointB.position.z);
-            CraneHoist.transform.position = Vector3.Lerp(CraneHoist.transform.position, targetpositionZ, moveSpeed * Time.deltaTime);
-        }
+        StartCoroutine(MovePoint());
+    }
 
-        if (Mathf.Abs(CraneHoist.transform.position.z - PointB.position.z) < 0.1f)
-        {
+    //코일 충돌후 위치가 리프트로 업데이트 디고 있을떄 목표지점으로 이동하는 함수
+    IEnumerator MovePoint()
+    {
+        Debug.Log("MovePoint로 넘어왔다.");
+        yield return new WaitForSeconds(2f);
+        StopCoroutine(DetectCoil());
+        yield return new WaitForSeconds(2f);
+        Debug.Log("포인트지점으로 옮기는 함수가 시작되는 부분이다.");
             Vector3 targetpositionX = new Vector3(PointB.position.x, CraneBody.transform.position.y, CraneBody.transform.position.z);
             CraneBody.transform.position = Vector3.Lerp(CraneBody.transform.position, targetpositionX, moveSpeed * Time.deltaTime);
-        }
+        yield return new WaitForSeconds(3f);
+      
+            Vector3 targetpositionZ = new Vector3(CraneHoist.transform.position.x, CraneHoist.transform.position.y, PointB.position.z);
+            CraneHoist.transform.position = Vector3.Lerp(CraneHoist.transform.position, targetpositionZ, moveSpeed * Time.deltaTime);
+        yield return new WaitForSeconds(3f);
+
+                Vector3 targetPositionY = new Vector3(CraneLift.transform.position.x, PointB.position.y, CraneLift.transform.position.z);
+                CraneLift.transform.position = Vector3.Lerp(CraneLift.transform.position, targetPositionY, moveSpeed * Time.deltaTime);          
+        yield return new WaitForSeconds(3);
+        cranstatus = CraneStatus.Idle;
         //해당위치 도착한 후 , 코일의 위치가 리프트의 특정위치로 업데이트되고있는 상황에서 리프트가 내려가는 매서드 실행. 내려가는동안 스키드의 특정부분과 충돌시 코일의 위치가 리프트의 특정 위치로 업데이트 되는 함수 종료. 
         //코일의 위치를 스키드의 특정위치로 옮기는 함수 만들어서 코일이 해당 위치에 놓여지는 것처럼 보이게 만들기
     }

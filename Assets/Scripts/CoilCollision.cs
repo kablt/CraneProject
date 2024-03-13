@@ -39,21 +39,22 @@ public class CoilCollision : MonoBehaviour
         coil.GetComponent<CapsuleCollider>().enabled = false;
         yield return new WaitForSeconds(0.3f);
         
-
+        
         // 움직이고자 하는 로직 추가
         while(true)
         {
+         MoveCoilWithLiftRoot();
             yield return null;
-            MoveCoilWithLiftRoot();
         }
-
+        
     }
+    
     void MoveCoilWithLiftRoot()
     {
         coil.transform.position = liftPoint.transform.position;
         
     }
-
+    
 
     void DisconnectLiftPoint()
     {
