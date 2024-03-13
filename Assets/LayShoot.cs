@@ -23,7 +23,7 @@ public class LayShoot : MonoBehaviour
         }
         else
         {
-            Debug.Log("어떠한 물체도 김");
+            Debug.Log("어떠한 물체도 감지되지 않음");
         }
     }
 }

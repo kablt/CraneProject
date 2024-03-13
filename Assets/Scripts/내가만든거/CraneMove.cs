@@ -8,7 +8,7 @@ public class CraneMove : MonoBehaviour
     public Transform PointA; //코일이 있는 위치
     public Transform PointB; //코일을 갖다 놓을 위치
     public Transform LiftRollBack; // 리프트가 대기할떄의 y축 위치
-    public float moveSpeed = 1f; // 크레인이 움직이는 속도
+    public float moveSpeed = 3f; // 크레인이 움직이는 속도
     public float downSpeed = 1f; // 크레인 내려가는 속도
     public GameObject CraneBody; // 움직일 크레인 body
     public GameObject CraneHoist; // 움직일 크레인 hosit
@@ -32,56 +32,61 @@ public class CraneMove : MonoBehaviour
     }
     void Update()
     {
-        switch(cranstatus)
+        switch (cranstatus)
         {
             case CraneStatus.Idle:
-                 Idle(); 
-                 break;
+                Idle();
+                break;
             case CraneStatus.Detected:
                 CraneDetectedCoil();
                 break;
             case CraneStatus.CoilMove:
                 MovePoint();
                 break;
-            default: 
-                Debug.Log("오류가 발생했습니다"); 
+            default:
+                Debug.Log("오류가 발생했습니다");
                 break;
         }
     }
 
 
     //코일을 집기위해 APoint로 옮기는 함수
-    void MovementRoutine()
+    IEnumerator MovementRoutine()
     {
-    
-            if (!Mathf.Approximately(CraneLift.transform.position.y, LiftRollBack.position.y))
-            {
-                Vector3 targetPositionY = new Vector3(CraneLift.transform.position.x, LiftRollBack.position.y, CraneLift.transform.position.z);
-                CraneLift.transform.position = Vector3.Lerp(CraneLift.transform.position, targetPositionY, moveSpeed * Time.deltaTime);          
-            }
-
-            if (Mathf.Abs(CraneLift.transform.position.y - LiftRollBack.position.y) < 0.1f)
-            {
-                Vector3 targetpositionZ = new Vector3(CraneHoist.transform.position.x, CraneHoist.transform.position.y, PointA.position.z);
-                CraneHoist.transform.position = Vector3.Lerp(CraneHoist.transform.position, targetpositionZ, moveSpeed * Time.deltaTime);            
-            }
-
-            if (Mathf.Abs(CraneHoist.transform.position.z - PointA.position.z) < 0.1f)
-            {
-                Vector3 targetpositionX = new Vector3(PointA.position.x, CraneBody.transform.position.y, CraneBody.transform.position.z);
-                CraneBody.transform.position = Vector3.Lerp(CraneBody.transform.position, targetpositionX, moveSpeed * Time.deltaTime);   
-            }
+        // 리프트 y축으로 올리는거
+            Vector3 targetPositionY = new Vector3(CraneLift.transform.position.x, LiftRollBack.position.y, CraneLift.transform.position.z);
+            CraneLift.transform.position = Vector3.Lerp(CraneLift.transform.position, targetPositionY, moveSpeed * Time.deltaTime);
+        yield return new WaitForSeconds(1f);
+        //Hoist z축으로 움직이는거
+        Vector3 targetpositionZ = new Vector3(CraneHoist.transform.position.x, CraneHoist.transform.position.y, PointA.position.z);
+            CraneHoist.transform.position = Vector3.Lerp(CraneHoist.transform.position, targetpositionZ, moveSpeed * Time.deltaTime);
+        yield return new WaitForSeconds(1f);
+        // Body를 x축으로 움직이기
+        Vector3 targetpositionX = new Vector3(PointA.position.x, CraneBody.transform.position.y, CraneBody.transform.position.z);
+            CraneBody.transform.position = Vector3.Lerp(CraneBody.transform.position, targetpositionX, moveSpeed * Time.deltaTime);
+        yield return new WaitForSeconds(1.5f);
+        cranstatus = CraneStatus.Detected;
 
     }
 
     //ray에 Coil태그가 있을때 해당 코일을 집는 코드
     void CraneDetectedCoil()
     {
-        Vector3 dir = new Vector3(0, -6f, 0); //방향(하강)
-        dir = dir.normalized;
-        CraneLift.transform.position += dir * downSpeed * Time.deltaTime;
+        Debug.Log("두번쨰 case 함수로 잘넘어왔다.");
+        StartCoroutine(DetectCoil());
         //리프트의 특정 지점과 코일이 충돌시 코일의 위치를 리프트의 특정위치로 업데이트하는 함수만들기.
         cranstatus = CraneStatus.CoilMove;
+    }
+
+    IEnumerator DetectCoil()
+    {
+        yield return new WaitForSeconds(1f);
+        Debug.Log("두번쨰 case 함수에서 코루틴을 발동 시켰다..");
+        StopCoroutine(MovementRoutine());
+        Vector3 dir = new Vector3(0, -20f, 0); //방향(하강)
+        dir = dir.normalized;
+        CraneLift.transform.position += dir * downSpeed * Time.deltaTime;
+        yield return new WaitForSeconds(1f);
     }
 
     //대기상태일떄 막대기에서 ray쏴서 코일이 있는지 상시 체크. 있으면 PointA로 이동
@@ -89,14 +94,12 @@ public class CraneMove : MonoBehaviour
     {
         // LayShooter의 컴포너틑에 들어가 있는 스크립트 LayShoot에 접근한다.
         LayShoot objectBShooter = LayShooter.GetComponent<LayShoot>();
-
+          StartCoroutine(MovementRoutine());
         //해당 객체가 null이 아니라면.(해당 객제가 있다면)
         if (objectBShooter != null)
         {
             // 객체안의 ShootAndCheckForCoil함수를 실행한다.(해당 객체에서 레이를 쏘고  Tag가 Coil인것을 감지하는 디버그를 찍는함수)
-            objectBShooter.ShootAndCheckForCoil();
-            MovementRoutine();
-            cranstatus = CraneStatus.Detected;
+            objectBShooter.ShootAndCheckForCoil();        
             //크레인의 위치를 코일의 집기위한 위치로 옮기는 함수
         }
         else
