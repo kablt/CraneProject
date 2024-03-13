@@ -42,8 +42,8 @@ public class CoilCollision : MonoBehaviour
         
         // 움직이고자 하는 로직 추가
         while(true)
-        {
          MoveCoilWithLiftRoot();
+        {
             yield return null;
         }
         
