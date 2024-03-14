@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Xml.Serialization;
 using UnityEngine;
 
 public class CoilCollision : MonoBehaviour
@@ -8,13 +9,21 @@ public class CoilCollision : MonoBehaviour
     public GameObject coil;
     public GameObject liftRoot;
     public GameObject liftPoint;
+    public GameObject CraneManager;
+    CraneMove cranemove ;
 
-    Coroutine liftCoroutine;
+    void Awake()
+    {
+        cranemove = CraneManager.GetComponent<CraneMove>();
+    }
+ 
     void OnCollisionEnter(Collision collision)
     {
-        if (collision.gameObject == coil && liftCoroutine == null)
+        
+        if (collision.gameObject.tag == "Coil" )
         {
-            liftCoroutine = StartCoroutine(MoveCoilAfterDelay());
+            cranemove.StopLift();
+            cranemove.LiftStatus = false;
             Debug.Log("충돌");
         }
 
@@ -22,8 +31,7 @@ public class CoilCollision : MonoBehaviour
         {
            
             Debug.Log("스키드와 충돌");
-            StopCoroutine(liftCoroutine);
-
+            cranemove.StopMovePoint();
             GetComponent<BoxCollider>().enabled = false;
             coil.GetComponent<CapsuleCollider>().enabled = true;
             coil.transform.position = collision.transform.position + Vector3.up*2.5f;
@@ -66,10 +74,6 @@ public class CoilCollision : MonoBehaviour
     }
 
     // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
 
     // Update is called once per frame
     void Update()
